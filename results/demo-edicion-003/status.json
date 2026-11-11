@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "operation": "edit_params",
+  "job_id": "demo-edicion-003",
+  "volume_mm3": 3600000.0,
+  "fully_constrained": true,
+  "objects": 12,
+  "freecad_version": "1.1.4",
+  "model": "model.FCStd",
+  "source": "results/demo-publico-002/model.FCStd",
+  "modified": {
+    "WIDTH": 500
+  },
+  "finished_utc": "2026-11-11T23:59:13.119388+00:00"
+}
