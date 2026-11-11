@@ -1,4 +1,4 @@
-import json, os, re, sys
+import json, os, re, subprocess, sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent.parent
 def main():
@@ -8,7 +8,11 @@ def main():
     elif event=="push":
         payload=json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
         added=[path for c in payload.get("commits",[]) for path in c.get("added",[]) if path.startswith("jobs/requests/") and path.endswith(".json")]
-        if len(added)!=1: raise ValueError("Una solicitud nueva por push")
+        if not added:
+            # GitHub puede omitir commits[] en eventos de algunos clientes.
+            completed=subprocess.run(["git","diff-tree","--no-commit-id","--name-only","--diff-filter=A","-r","HEAD"],cwd=ROOT,capture_output=True,text=True,check=True)
+            added=[p for p in completed.stdout.splitlines() if p.startswith("jobs/requests/") and p.endswith(".json")]
+        if len(set(added))!=1: raise ValueError("Se requiere una sola petición añadida: "+repr(added))
         p=added[0]
     else: raise ValueError("Evento no admitido")
     rel=Path(p)
@@ -24,7 +28,7 @@ def main():
     if not isinstance(params,dict) or set(params)!={"width_mm","depth_mm","height_mm","thickness_mm"}:raise ValueError("Parámetros incorrectos")
     for v in params.values():
         if isinstance(v,bool) or not isinstance(v,(int,float)) or not (0.1<=v<=5000):raise ValueError("Dimensión inválida")
-    if (ROOT/"results"/jid/"status.json").exists():raise ValueError("ID usado, crear una nueva revisión")
+    if (ROOT/"results"/jid/"status.json").exists():raise ValueError("ID usado, crear nueva revisión")
     with open(os.environ["GITHUB_ENV"],"a") as out:
         out.write(f"CAD_REQUEST={p}\nCAD_JOB_ID={jid}\nCAD_OUTPUT=results/{jid}\n")
     print("SOLICITUD OK:",jid)
