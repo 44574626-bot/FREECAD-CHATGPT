@@ -1,0 +1,10 @@
+{
+  "job_id": "demo-manual-001",
+  "operation": "create_box",
+  "params": {
+    "width_mm": 454,
+    "depth_mm": 400,
+    "height_mm": 18,
+    "thickness_mm": 18
+  }
+}
