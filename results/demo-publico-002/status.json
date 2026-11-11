@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "operation": "create_box",
+  "job_id": "demo-publico-002",
+  "model": "model.FCStd",
+  "volume_mm3": 3268800.0,
+  "fully_constrained": true,
+  "freecad_version": "1.1.4",
+  "finished_utc": "2026-11-11T23:56:12.663869+00:00"
+}
