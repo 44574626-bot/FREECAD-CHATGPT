@@ -1,0 +1,69 @@
+name: FreeCAD | Trabajos compartidos
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'jobs/requests/*.json'
+  workflow_dispatch:
+    inputs:
+      request_path:
+        description: Ruta de solicitud JSON
+        required: true
+        default: jobs/examples/primer_modelo.json
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: freecad-serial
+  cancel-in-progress: false
+
+jobs:
+  cad:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Seleccionar petición
+        env:
+          JOB_PATH: ${{ github.event.inputs.request_path || '' }}
+        run: python3 infra/select_request.py
+      - uses: actions/cache@v4
+        with:
+          path: .cache/freecad/1.1.4
+          key: freecad-1.1.4-linux-x86_64-f6dc6ba676e5ac96a565ebc8d657232f94c6158e85b4352141bd1a46f6b43434
+      - name: Instalar bibliotecas de ejecución
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y xvfb xauth libgl1 libopengl0 libxkbcommon-x11-0 libxcb-cursor0 libfontconfig1
+      - name: Preparar FreeCAD con checksum
+        run: bash infra/install_freecad.sh
+      - name: Ejecutar FreeCAD
+        run: bash infra/launch_freecad.sh
+      - name: Guardar resultados en artefacto
+        if: always() && env.CAD_JOB_ID != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: freecad-${{ env.CAD_JOB_ID }}
+          path: results/${{ env.CAD_JOB_ID }}/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Versionar resultados para otros chats
+        if: always() && env.CAD_JOB_ID != ''
+        env:
+          JOB_ID: ${{ env.CAD_JOB_ID }}
+        run: |
+          [ -f "results/$JOB_ID/status.json" ] || exit 0
+          git config user.name "freecad-shared-bot"
+          git config user.email "freecad-shared-bot@users.noreply.github.com"
+          git add "results/$JOB_ID/"
+          git diff --cached --quiet && exit 0
+          git commit -m "CAD: resultado $JOB_ID [skip ci]"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 3
+          done
+          exit 1
