@@ -1,0 +1,8 @@
+{
+  "job_id": "demo-edicion-003",
+  "operation": "edit_params",
+  "source": "results/demo-publico-002/model.FCStd",
+  "params": {
+    "WIDTH": 500
+  }
+}
