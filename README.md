@@ -10,7 +10,7 @@
 
 ## Funcionamiento para varios chats
 
-El chat crea un archivo **nuevo** en `jobs/requests/<job_id>.json` usando la conexión GitHub. El commit en `main` dispara `.github/workflows/freecad.yml`. El ejecutor abre FreeCAD, trabaja sobre un archivo nativo y publica un resultado propio en `results/<job_id>/`.
+Las solicitudes JSON se guardan en `jobs/requests/`, pero **ningún commit dispara FreeCAD**. La ejecución necesita `Actions → FreeCAD | Trabajos compartidos → Run workflow` con cuota de GitHub verificada y `confirmar_cuota` explícito. Los modelos nuevos quedan en **artifacts temporales** de Actions (14 días); ya no se incorporan a Git.
 
 **Crear un modelo**:
 ```json
@@ -29,7 +29,7 @@ El chat crea un archivo **nuevo** en `jobs/requests/<job_id>.json` usando la con
 
 Actualmente las operaciones permitidas son **create_box**, **edit_params** (WIDTH, DEPTH, HEIGHT, THICKNESS) e **inspect**. El acceso se realiza mediante archivos JSON restringidos, **sin ejecución de código Python arbitrario desde el chat**.
 
-Los modelos siguen bajo control de versiones Git, y el motor es reproducible. El caché no es permanente: puede expirar o eliminarse.
+Los dos modelos de demostración anteriores siguen en Git como fuentes históricas para reproducir las pruebas. Las nuevas salidas solo viven en artifacts temporales: para editar un resultado nuevo en otra ejecución habría que recuperarlo explícitamente. El caché puede expirar.
 
 ## Seguridad: repositorio PÚBLICO
 
@@ -40,7 +40,7 @@ Antes de incorporar los archivos del proyecto SAY, el titular debe cambiarlo a p
 ## Alcance y restricciones
 
 - No es un servidor permanentemente encendido: GitHub Actions utiliza una máquina temporal por trabajo.
-- FreeCAD 1.1.4 se ejecuta realmente y sus archivos nativos se conservan.
+- FreeCAD 1.1.4 se ejecuta realmente; las nuevas salidas solo se conservan temporalmente en Actions, no en Git.
 - Solo está probada la generación y edición de un cuerpo rectangular simple. **Todavía no se ha habilitado la construcción completa de R06, ensamblajes o planos**.
 - Al ejecutar sobre un repositorio público, cualquier archivo generado será público. Los trabajos pasan por GitHub Actions, no por Codex.
 - Tras convertir el repositorio a privado, habrá que verificar las políticas de Actions y la cuota disponible según el plan.

@@ -2,3 +2,12 @@
 __pycache__/
 *.pyc
 *.FCStd1
+
+# El repositorio público es una probeta, no un almacén de entregables.
+results/
+*.FCStd
+*.glb
+*.step
+*.stp
+*.png
+*.log

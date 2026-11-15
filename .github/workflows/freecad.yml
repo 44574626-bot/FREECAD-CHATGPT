@@ -14,7 +14,7 @@ on:
         type: boolean
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: freecad-serial
@@ -53,19 +53,3 @@ jobs:
           path: results/${{ env.CAD_JOB_ID }}/
           if-no-files-found: warn
           retention-days: 14
-      - name: Versionar resultados para otros chats
-        if: always() && env.CAD_JOB_ID != ''
-        env:
-          JOB_ID: ${{ env.CAD_JOB_ID }}
-        run: |
-          [ -f "results/$JOB_ID/status.json" ] || exit 0
-          git config user.name "freecad-shared-bot"
-          git config user.email "freecad-shared-bot@users.noreply.github.com"
-          git add "results/$JOB_ID/"
-          git diff --cached --quiet && exit 0
-          git commit -m "CAD: resultado $JOB_ID [skip ci]"
-          for attempt in 1 2 3; do
-            git pull --rebase origin main && git push origin HEAD:main && exit 0
-            sleep 3
-          done
-          exit 1
