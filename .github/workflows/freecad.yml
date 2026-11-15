@@ -1,9 +1,5 @@
 name: FreeCAD | Trabajos compartidos
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'jobs/requests/*.json'
   workflow_dispatch:
     inputs:
       request_path:
@@ -11,6 +7,11 @@ on:
         required: true
         default: jobs/examples/primer_modelo.json
         type: string
+      confirmar_cuota:
+        description: 'Cuota comprobada y cero cargos adicionales'
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -21,6 +22,7 @@ concurrency:
 
 jobs:
   cad:
+    if: ${{ inputs.confirmar_cuota }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
